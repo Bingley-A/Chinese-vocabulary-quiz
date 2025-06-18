@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选词填空游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Marker Felt', '楷体', sans-serif;
+        }
+        
+        body {
+            background-color: #FFF9F0; /* 奶白色背景 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-image: radial-gradient(#FFD6E7 10%, transparent 11%),
+                              radial-gradient(#FFD6E7 10%, transparent 11%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* 标题样式 */
+        .title {
+            color: #FF6B9C; /* 淡粉色 */
+            font-size: 3.5rem;
+            margin: 20px 0 40px;
+            text-align: center;
+            text-shadow: 3px 3px 0 #FFD1E0, 
+                         6px 6px 0 rgba(0, 0, 0, 0.1);
+            letter-spacing: 2px;
+            position: relative;
+            padding: 10px 30px;
+        }
+        
+        .title::before,
+        .title::after {
+            content: "★";
+            color: #FFD700;
+            font-size: 2rem;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .title::before {
+            left: -20px;
+        }
+        
+        .title::after {
+            right: -20px;
+        }
+        
+        /* 词语卡片容器 */
+        .word-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0 50px;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        /* 3D立体词语卡片 */
+        .word-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 18px;
+            padding: 18px 35px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2),
+                        inset 0 -5px 0 rgba(0, 0, 0, 0.1),
+                        inset 0 5px 0 rgba(255, 255, 255, 0.7);
+            position: relative;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        /* 不同卡片颜色 */
+        .word-card:nth-child(1) { background: linear-gradient(145deg, #FFD1DC, #FFB6C1); }
+        .word-card:nth-child(2) { background: linear-gradient(145deg, #B5EAD7, #87DCC0); }
+        .word-card:nth-child(3) { background: linear-gradient(145deg, #FFE5B4, #FFDDA9); }
+        .word-card:nth-child(4) { background: linear-gradient(145deg, #C7CEEA, #B5B9E3); }
+        .word-card:nth-child(5) { background: linear-gradient(145deg, #F8C8DC, #F5A9C8); }
+        
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2),
+                        inset 0 -5px 0 rgba(0, 0, 0, 0.1),
+                        inset 0 5px 0 rgba(255, 255, 255, 0.7);
+        }
+        
+        .word-card:active {
+            transform: translateY(3px);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 句子区域 */
+        .sentence-container {
+            background: linear-gradient(160deg, #FFFAF0, #FFF0F5);
+            border-radius: 25px;
+            padding: 30px 40px;
+            width: 100%;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1),
+                        inset 0 0 30px rgba(255, 182, 193, 0.3);
+            border: 4px solid #FFD1E6;
+            position: relative;
+            margin-bottom: 50px;
+        }
+        
+        /* 童趣装饰 */
+        .sentence-container::before {
+            content: "";
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            width: 70px;
+            height: 70px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23FFD700"/><circle cx="35" cy="35" r="10" fill="%23FFFFFF"/><circle cx="65" cy="35" r="10" fill="%23FFFFFF"/><path d="M 30,65 Q 50,80 70,65" stroke="%23FF6B9C" stroke-width="4" fill="none"/></svg>');
+            background-size: contain;
+            z-index: 2;
+        }
+        
+        .sentence-container::after {
+            content: "";
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            width: 80px;
+            height: 80px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,15 C70,15 85,30 85,50 C85,70 70,85 50,85 C30,85 15,70 15,50 C15,30 30,15 50,15 Z" fill="%2398DDCA"/><circle cx="35" cy="45" r="5" fill="%23333"/><circle cx="65" cy="45" r="5" fill="%23333"/><path d="M40,65 Q50,75 60,65" stroke="%23333" stroke-width="3" fill="none"/></svg>');
+            background-size: contain;
+            z-index: 2;
+        }
+        
+        /* 句子样式 */
+        .sentence {
+            font-size: 1.5rem;
+            margin: 25px 0;
+            line-height: 1.8;
+            color: #555;
+            position: relative;
+            padding-left: 45px;
+        }
+        
+        .sentence::before {
+            content: "✿";
+            position: absolute;
+            left: 0;
+            top: 5px;
+            color: #FF6B9C;
+            font-size: 1.8rem;
+        }
+        
+        /* 填空位置 */
+        .blank {
+            display: inline-block;
+            min-width: 100px;
+            height: 50px;
+            border-bottom: 3px dashed #FF6B9C;
+            margin: 0 8px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 50px;
+            color: #E91E63;
+            font-weight: bold;
+            position: relative;
+            background: rgba(255, 182, 193, 0.1);
+            border-radius: 10px;
+        }
+        
+        /* 成功消息 */
+        .success-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .success-message.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .message-content {
+            background: linear-gradient(135deg, #FFD1DC, #FFB6C1);
+            padding: 50px 80px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+        }
+        
+        .success-message.show .message-content {
+            transform: scale(1);
+        }
+        
+        .message-content h2 {
+            font-size: 4rem;
+            color: #FFFFFF;
+            text-shadow: 2px 2px 0 #FF6B9C;
+            margin-bottom: 30px;
+        }
+        
+        .message-content p {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(to bottom, #FFD700, #FFA500);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            font-size: 1.8rem;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #FF8C00;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #FF8C00;
+        }
+        
+        .restart-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #FF8C00;
+        }
+        
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .word-card {
+                padding: 15px 25px;
+                font-size: 1.5rem;
+                min-width: 120px;
+            }
+            
+            .sentence {
+                font-size: 1.3rem;
+                padding-left: 35px;
+            }
+            
+            .blank {
+                min-width: 80px;
+                height: 40px;
+                line-height: 40px;
+            }
+            
+            .message-content {
+                padding: 30px 40px;
+            }
+            
+            .message-content h2 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .word-container {
+                gap: 15px;
+            }
+            
+            .word-card {
+                padding: 12px 20px;
+                font-size: 1.3rem;
+                min-width: 100px;
+            }
+            
+            .sentence {
+                font-size: 1.1rem;
+                padding-left: 30px;
+            }
+            
+            .blank {
+                min-width: 70px;
+                height: 35px;
+                line-height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">选择合适词语填空</h1>
+        
+        <div class="word-container" id="wordContainer">
+            <!-- 词语卡片由JS动态生成 -->
+        </div>
+        
+        <div class="sentence-container">
+            <div class="sentence">
+                ①A：下个星期的游泳比赛你参加吗？<br>
+                B：你别跟我<span class="blank" data-answer="开玩笑"></span>了，我没学过游泳，怎么参加比赛啊？
+            </div>
+            <div class="sentence">
+                ②A：小李这个人怎么样？<br>
+                B：他虽然<span class="blank" data-answer="脾气"></span>很大，但工作很认真。
+            </div>
+            <div class="sentence">
+                ③A：真<span class="blank" data-answer="羡慕"></span>你，找了个那么漂亮的女朋友！<br>
+                B：她不仅长得漂亮，也很聪明。
+            </div>
+            <div class="sentence">
+                ④A：都这么晚了，他怎么还没到？<br>
+                B：他以前<span class="blank" data-answer="从来"></span>不迟到，今天是怎么了？
+            </div>
+            <div class="sentence">
+                ⑤A：这个电影讲了一个爱情故事，很浪漫，让人特别<span class="blank" data-answer="感动"></span>。<br>
+                B：你们女孩子就是喜欢看这种电影。
+            </div>
+        </div>
+    </div>
+    
+    <div class="success-message" id="successMessage">
+        <div class="message-content">
+            <h2>你太棒啦！</h2>
+            <p>恭喜你完成了所有填空！</p>
+            <button class="restart-btn" id="restartBtn">再玩一次</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 词语数组
+            const words = ['脾气', '从来', '感动', '羡慕', '开玩笑'];
+            
+            // 获取DOM元素
+            const wordContainer = document.getElementById('wordContainer');
+            const blanks = document.querySelectorAll('.blank');
+            const successMessage = document.getElementById('successMessage');
+            const restartBtn = document.getElementById('restartBtn');
+            
+            // 当前需要填写的空白索引
+            let currentBlankIndex = 0;
+            
+            // 打乱词语顺序
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // 创建词语卡片
+            function createWordCards() {
+                const shuffledWords = shuffleArray([...words]);
+                
+                shuffledWords.forEach(word => {
+                    const card = document.createElement('div');
+                    card.className = 'word-card';
+                    card.textContent = word;
+                    card.dataset.word = word;
+                    
+                    card.addEventListener('click', () => handleWordClick(word, card));
+                    
+                    wordContainer.appendChild(card);
+                });
+            }
+            
+            // 处理词语点击
+            function handleWordClick(word, card) {
+                const currentBlank = blanks[currentBlankIndex];
+                const correctAnswer = currentBlank.dataset.answer;
+                
+                if (word === correctAnswer) {
+                    // 正确
+                    currentBlank.textContent = word;
+                    card.style.visibility = 'hidden';
+                    card.style.pointerEvents = 'none';
+                    
+                    // 检查是否完成所有填空
+                    if (currentBlankIndex === blanks.length - 1) {
+                        setTimeout(() => {
+                            successMessage.classList.add('show');
+                        }, 800);
+                    } else {
+                        currentBlankIndex++;
+                    }
+                } else {
+                    // 错误 - 添加震动效果
+                    card.classList.add('shake');
+                    setTimeout(() => {
+                        card.classList.remove('shake');
+                    }, 500);
+                }
+            }
+            
+            // 重新开始游戏
+            function restartGame() {
+                // 重置变量
+                currentBlankIndex = 0;
+                
+                // 清空所有填空
+                blanks.forEach(blank => {
+                    blank.textContent = '';
+                });
+                
+                // 清空词语容器并重新创建卡片
+                wordContainer.innerHTML = '';
+                createWordCards();
+                
+                // 隐藏成功消息
+                successMessage.classList.remove('show');
+            }
+            
+            // 初始化游戏
+            createWordCards();
+            
+            // 添加重新开始按钮事件
+            restartBtn.addEventListener('click', restartGame);
+        });
+    </script>
+</body>
+</html>

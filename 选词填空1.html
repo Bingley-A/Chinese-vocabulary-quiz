@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可爱选词填空游戏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #FFFDD0; /* 奶白色背景 */
+            font-family: 'Ma Shan Zheng', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 装饰元素 */
+        .decoration {
+            position: absolute;
+            z-index: 0;
+            opacity: 0.3;
+        }
+        
+        .star {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 10px 10px, #FFD700, #FFA500);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: twinkle 3s infinite;
+        }
+        
+        .cloud {
+            width: 50px;
+            height: 30px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+            animation: float 8s infinite;
+        }
+        
+        .cloud:before, .cloud:after {
+            content: "";
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+        }
+        
+        .cloud:before {
+            width: 25px;
+            height: 25px;
+            top: -10px;
+            left: 10px;
+        }
+        
+        .cloud:after {
+            width: 20px;
+            height: 20px;
+            top: -8px;
+            right: 10px;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 3.2rem;
+            color: #FF6B9C; /* 淡粉色 */
+            text-align: center;
+            margin: 25px 0 40px;
+            text-shadow: 3px 3px 0 #FFD1DC, 
+                        6px 6px 0 rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+            letter-spacing: 2px;
+        }
+        
+        /* 词语容器 */
+        .words-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0 50px;
+            max-width: 900px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* 词语框样式 */
+        .word-box {
+            min-width: 120px;
+            height: 70px;
+            background: #A8E6CF;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 8px 0 #7DC4A9, 
+                        inset 0 -3px 8px rgba(0,0,0,0.1),
+                        inset 0 3px 8px rgba(255,255,255,0.5);
+            transition: all 0.2s ease;
+            position: relative;
+            padding: 0 20px;
+            text-align: center;
+            transform: rotate(-2deg);
+        }
+        
+        .word-box:nth-child(2n) {
+            background: #FFD3B6;
+            box-shadow: 0 8px 0 #FFB28A;
+            transform: rotate(1deg);
+        }
+        
+        .word-box:nth-child(3n) {
+            background: #FFAAA5;
+            box-shadow: 0 8px 0 #E9938E;
+            transform: rotate(-3deg);
+        }
+        
+        .word-box:nth-child(4n) {
+            background: #DCEDC1;
+            box-shadow: 0 8px 0 #BFD9A8;
+            transform: rotate(2deg);
+        }
+        
+        .word-box:nth-child(5n) {
+            background: #B5EAD7;
+            box-shadow: 0 8px 0 #97D4BF;
+            transform: rotate(-1deg);
+        }
+        
+        .word-box:hover {
+            transform: translateY(-5px) rotate(0deg);
+            box-shadow: 0 12px 0 rgba(0,0,0,0.1);
+        }
+        
+        /* 句子容器 */
+        .sentences-container {
+            background: #FFF9C4; /* 浅黄色背景 */
+            border-radius: 25px;
+            padding: 30px 40px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08),
+                       inset 0 0 20px rgba(255, 220, 156, 0.5);
+            border: 3px solid #FFD54F;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 40px;
+        }
+        
+        .sentences-container:before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 40px;
+            background: #FFECB3;
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        /* 句子样式 */
+        .sentence {
+            font-size: 1.6rem;
+            margin: 25px 0;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            line-height: 1.6;
+        }
+        
+        .sentence-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: #FF8A80;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            margin-right: 15px;
+            font-size: 1.3rem;
+            box-shadow: 0 3px 0 #E57373;
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 100px;
+            height: 50px;
+            border-bottom: 3px dashed #FF8A80;
+            margin: 0 10px;
+            vertical-align: middle;
+            position: relative;
+            text-align: center;
+            padding: 0 10px;
+            font-weight: bold;
+            color: #E91E63;
+            font-size: 1.8rem;
+            line-height: 50px;
+        }
+        
+        /* 童趣图案 */
+        .decoration-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .animal {
+            position: absolute;
+            font-size: 3rem;
+        }
+        
+        /* 成功提示 */
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px 70px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 10;
+            font-size: 3rem;
+            color: #FF6B9C;
+            border: 5px solid #FFD1DC;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .success-message.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .success-message:before {
+            content: "🎉";
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 20px;
+        }
+        
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease;
+        }
+        
+        /* 装饰动画 */
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .word-box {
+                min-width: 100px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .sentence {
+                font-size: 1.3rem;
+            }
+            
+            .blank {
+                height: 40px;
+                min-width: 80px;
+                font-size: 1.5rem;
+                line-height: 40px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .words-container {
+                gap: 15px;
+            }
+            
+            .word-box {
+                min-width: 80px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .sentences-container {
+                padding: 20px;
+            }
+            
+            .sentence {
+                font-size: 1.1rem;
+                padding: 10px 15px;
+            }
+            
+            .sentence-number {
+                width: 28px;
+                height: 28px;
+                line-height: 28px;
+                font-size: 1.1rem;
+            }
+            
+            .blank {
+                height: 35px;
+                min-width: 70px;
+                font-size: 1.3rem;
+                line-height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰元素 -->
+    <div class="decoration" style="top: 10%; left: 5%;">
+        <div class="star"></div>
+    </div>
+    <div class="decoration" style="top: 15%; right: 8%;">
+        <div class="cloud"></div>
+    </div>
+    <div class="decoration" style="bottom: 20%; left: 7%;">
+        <div class="star"></div>
+    </div>
+    <div class="decoration" style="bottom: 25%; right: 10%;">
+        <div class="cloud"></div>
+    </div>
+    
+    <h1 class="title">选择合适词语填空</h1>
+    
+    <div class="words-container" id="wordsContainer">
+        <!-- 词语框将通过JS动态生成 -->
+    </div>
+    
+    <div class="sentences-container">
+        <div class="sentence">
+            <span class="sentence-number">①</span>
+            他们两个人<span class="blank" id="blank0"></span>努力，终于完成了工作。
+        </div>
+        <div class="sentence">
+            <span class="sentence-number">②</span>
+            那个地方特别漂亮，每年都会<span class="blank" id="blank1"></span>很多国内外的游客。
+        </div>
+        <div class="sentence">
+            <span class="sentence-number">③</span>
+            在我的<span class="blank" id="blank2"></span>中，他一直是个很幽默的人。
+        </div>
+        <div class="sentence">
+            <span class="sentence-number">④</span>
+            我是一个南方人，很难<span class="blank" id="blank3"></span>每天吃面条。
+        </div>
+        <div class="sentence">
+            <span class="sentence-number">⑤</span>
+            这个事你最好先问一下李老师，这方面他比我<span class="blank" id="blank4"></span>。
+        </div>
+    </div>
+    
+    <!-- 童趣图案装饰 -->
+    <div class="decoration-container">
+        <div class="animal" style="top: 60px; left: 50px;">🐰</div>
+        <div class="animal" style="top: 100px; right: 70px;">🐻</div>
+        <div class="animal" style="bottom: 150px; left: 100px;">🐱</div>
+        <div class="animal" style="bottom: 100px; right: 90px;">🦊</div>
+        <div class="animal" style="bottom: 250px; left: 45%;">🐶</div>
+    </div>
+    
+    <!-- 成功消息 -->
+    <div class="success-message" id="successMessage">
+        你太棒啦！
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 词语数组
+            const words = ['印象', '接受', '熟悉', '共同', '吸引'];
+            
+            // 正确答案映射
+            const correctAnswers = {
+                0: '共同',
+                1: '吸引',
+                2: '印象',
+                3: '接受',
+                4: '熟悉'
+            };
+            
+            // 当前需要填写的句子索引
+            let currentSentenceIndex = 0;
+            // 已完成的句子计数
+            let completedCount = 0;
+            
+            // 获取DOM元素
+            const wordsContainer = document.getElementById('wordsContainer');
+            const successMessage = document.getElementById('successMessage');
+            
+            // 创建词语框
+            words.forEach(word => {
+                const wordBox = document.createElement('div');
+                wordBox.className = 'word-box';
+                wordBox.textContent = word;
+                wordBox.dataset.word = word;
+                
+                // 添加点击事件
+                wordBox.addEventListener('click', () => {
+                    const blank = document.getElementById(`blank${currentSentenceIndex}`);
+                    const correctAnswer = correctAnswers[currentSentenceIndex];
+                    
+                    if (wordBox.dataset.word === correctAnswer) {
+                        // 正确：将词语填入空白处
+                        blank.textContent = word;
+                        wordBox.style.opacity = '0.5';
+                        wordBox.style.pointerEvents = 'none';
+                        wordBox.style.transform = 'scale(0.95)';
+                        
+                        // 移动到下一个句子
+                        currentSentenceIndex++;
+                        completedCount++;
+                        
+                        // 检查是否完成所有句子
+                        if (completedCount === 5) {
+                            setTimeout(() => {
+                                successMessage.classList.add('show');
+                            }, 500);
+                        }
+                    } else {
+                        // 错误：震动效果
+                        wordBox.classList.add('shake');
+                        setTimeout(() => {
+                            wordBox.classList.remove('shake');
+                        }, 500);
+                    }
+                });
+                
+                wordsContainer.appendChild(wordBox);
+            });
+            
+            // 随机打乱词语框的顺序
+            for (let i = wordsContainer.children.length; i >= 0; i--) {
+                wordsContainer.appendChild(wordsContainer.children[Math.random() * i | 0]);
+            }
+        });
+    </script>
+</body>
+</html>

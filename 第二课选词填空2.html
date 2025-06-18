@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>复古风选词填空游戏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #f7f0d9 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%23f7f0d9"/><path d="M0,0 Q100,50 200,0 L200,200 Q100,150 0,200 Z" fill="%23f0e6c4" opacity="0.2"/></svg>');
+            font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: #5d4037;
+        }
+        
+        /* 复古装饰元素 */
+        .vintage-decoration {
+            position: absolute;
+            z-index: 0;
+            opacity: 0.15;
+        }
+        
+        .ink-bottle {
+            width: 60px;
+            height: 80px;
+            background: #1a1a1a;
+            position: absolute;
+            top: 10%;
+            left: 5%;
+            border-radius: 5px 5px 20px 20px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        
+        .ink-bottle:before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            width: 40px;
+            height: 15px;
+            background: #333;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .feather-pen {
+            width: 5px;
+            height: 120px;
+            background: #d2b48c;
+            position: absolute;
+            bottom: 15%;
+            right: 8%;
+            transform: rotate(-15deg);
+            border-radius: 3px;
+        }
+        
+        .feather-pen:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 15px;
+            height: 30px;
+            background: #8c7b6b;
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+        
+        .old-book {
+            width: 100px;
+            height: 130px;
+            background: #8B4513;
+            position: absolute;
+            bottom: 20%;
+            left: 7%;
+            border-radius: 5px 10px 10px 5px;
+            transform: rotate(5deg);
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .old-book:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: #A0522D;
+        }
+        
+        .vintage-frame {
+            position: absolute;
+            top: 15%;
+            right: 5%;
+            width: 100px;
+            height: 120px;
+            border: 10px solid #d2b48c;
+            border-image: repeating-linear-gradient(45deg, #d2b48c, #8B4513 10px) 20;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            opacity: 0.3;
+        }
+        
+        /* 标题样式 */
+        .game-title {
+            font-size: 3.2rem;
+            color: #5d4037;
+            text-align: center;
+            margin: 20px 0 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 3px;
+            position: relative;
+            font-family: 'Ma Shan Zheng', cursive;
+            background: linear-gradient(to bottom, #5d4037, #3e2723);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+        }
+        
+        .game-title:after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #5d4037, transparent);
+            border-radius: 50%;
+        }
+        
+        /* 游戏容器 */
+        .game-container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(247, 240, 217, 0.7);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                inset 0 0 30px rgba(139, 69, 19, 0.2);
+            position: relative;
+            z-index: 1;
+            border: 1px solid #d2b48c;
+            margin-bottom: 30px;
+        }
+        
+        /* 词语选择区域 */
+        .word-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin: 30px 0 50px;
+            padding: 25px;
+            background: rgba(210, 180, 140, 0.2);
+            border-radius: 5px;
+            position: relative;
+            border: 2px dashed #8B4513;
+            box-shadow: inset 0 0 15px rgba(139, 69, 19, 0.1);
+        }
+        
+        .word-container:before {
+            content: "✒ 选择词语填空 ✒";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f7f0d9;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            color: #5d4037;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-family: 'Ma Shan Zheng', cursive;
+            border: 1px solid #d2b48c;
+        }
+        
+        .word-box {
+            width: 120px;
+            height: 70px;
+            background: rgba(210, 180, 140, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4e342e;
+            cursor: pointer;
+            border: 2px solid #8B4513;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Ma Shan Zheng', cursive;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            transform: rotate(var(--rotate));
+        }
+        
+        .word-box:hover {
+            transform: rotate(0deg) translateY(-5px);
+            background: rgba(210, 180, 140, 0.4);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .word-box:active {
+            transform: scale(0.95) rotate(0deg);
+        }
+        
+        .word-box.used {
+            opacity: 0.3;
+            transform: scale(0.9) rotate(0deg);
+            cursor: not-allowed;
+        }
+        
+        /* 句子区域 */
+        .sentence-container {
+            width: 100%;
+            background: #f7f0d9;
+            border: 5px double #8B4513;
+            border-radius: 5px;
+            padding: 30px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-image: 
+                linear-gradient(90deg, transparent 98%, #8B4513 98%),
+                linear-gradient(0deg, transparent 98%, #8B4513 98%);
+            background-size: 30px 30px;
+        }
+        
+        .sentence-container:before {
+            content: "📜 对话填空区 📜";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #8B4513;
+            color: #f7f0d9;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .dialogue {
+            font-size: 1.5rem;
+            margin: 25px 0;
+            padding: 15px 20px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            line-height: 1.7;
+            position: relative;
+            min-height: 60px;
+            box-shadow: inset 0 0 10px rgba(139, 69, 19, 0.1);
+            border-left: 3px solid #8B4513;
+        }
+        
+        .dialogue:nth-child(even) {
+            background: rgba(210, 180, 140, 0.1);
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 90px;
+            height: 45px;
+            border-bottom: 2px dashed #5d4037;
+            margin: 0 8px;
+            text-align: center;
+            vertical-align: middle;
+            position: relative;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            transition: all 0.3s;
+            font-family: 'Ma Shan Zheng', cursive;
+            padding: 0 5px;
+        }
+        
+        .blank.filled {
+            border-bottom: 2px solid #5d4037;
+            background: rgba(210, 180, 140, 0.2);
+        }
+        
+        /* 反馈信息 */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #f7f0d9;
+            padding: 30px 50px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 2.5rem;
+            color: #5d4037;
+            z-index: 100;
+            display: none;
+            border: 5px double #8B4513;
+            animation: popIn 0.5s;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        /* 页脚 */
+        footer {
+            margin-top: 20px;
+            padding: 15px;
+            color: #5d4037;
+            font-size: 1.1rem;
+            text-align: center;
+            width: 100%;
+            font-family: 'Ma Shan Zheng', cursive;
+            opacity: 0.8;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.4rem;
+            }
+            
+            .word-container {
+                gap: 15px;
+            }
+            
+            .word-box {
+                width: 100px;
+                height: 60px;
+                font-size: 1.7rem;
+            }
+            
+            .dialogue {
+                font-size: 1.3rem;
+            }
+            
+            .blank {
+                min-width: 70px;
+                height: 35px;
+            }
+            
+            .feedback {
+                font-size: 2rem;
+                padding: 20px 30px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 1.9rem;
+            }
+            
+            .word-box {
+                width: 80px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .dialogue {
+                font-size: 1.1rem;
+                padding: 10px;
+            }
+            
+            .blank {
+                min-width: 50px;
+                height: 30px;
+                margin: 0 4px;
+            }
+            
+            .feedback {
+                font-size: 1.6rem;
+                padding: 15px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 复古装饰元素 -->
+    <div class="vintage-decoration ink-bottle"></div>
+    <div class="vintage-decoration feather-pen"></div>
+    <div class="vintage-decoration old-book"></div>
+    <div class="vintage-decoration vintage-frame"></div>
+    
+    <!-- 游戏标题 -->
+    <h1 class="game-title">选择合适的词语填空</h1>
+    
+    <div class="game-container">
+        <!-- 词语选择区 -->
+        <div class="word-container">
+            <div class="word-box" data-word="麻烦" style="--rotate: -3deg;">麻烦</div>
+            <div class="word-box" data-word="好像" style="--rotate: 2deg;">好像</div>
+            <div class="word-box" data-word="平时" style="--rotate: -1deg;">平时</div>
+            <div class="word-box" data-word="联系" style="--rotate: 4deg;">联系</div>
+            <div class="word-box" data-word="陪" style="--rotate: -2deg;">陪</div>
+        </div>
+        
+        <!-- 对话填空区 -->
+        <div class="sentence-container">
+            <div class="dialogue">
+                ⑥ A: 上车吧，我送你。<br>
+                B: 不<span class="blank" data-answer="麻烦"></span>你了，我坐出租车回去。
+            </div>
+            <div class="dialogue">
+                ⑦ A: 周末的同学聚会你参加吗？<br>
+                B: 当然，有几个同学毕业后就没<span class="blank" data-answer="联系"></span>了，正好借这个机会见见。
+            </div>
+            <div class="dialogue">
+                ⑧ A: 都九点了，你怎么还不起床？<br>
+                B: 昨晚看足球比赛看到两点半，这不是周六吗？<span class="blank" data-answer="平时"></span>哪能睡到九点？
+            </div>
+            <div class="dialogue">
+                ⑨ A: 小李，那个女孩儿是谁啊？你认识？<br>
+                B: 应该不认识，但是<span class="blank" data-answer="好像"></span>在哪儿见过。
+            </div>
+            <div class="dialogue">
+                ⑩ A: 经理，我丈夫生病了。我想请一天假，<span class="blank" data-answer="陪"></span>他去医院看看。<br>
+                B: 好，你先把家里照顾好，工作的事别担心。
+            </div>
+        </div>
+    </div>
+    
+    <!-- 反馈信息 -->
+    <div class="feedback">答对啦，你真棒！</div>
+    
+    <footer>
+        复古风选词填空游戏 | 重温经典语言之美
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wordBoxes = document.querySelectorAll('.word-box');
+            const blanks = document.querySelectorAll('.blank');
+            const feedback = document.querySelector('.feedback');
+            let correctCount = 0;
+            
+            // 正确答案映射
+            const correctAnswers = {
+                0: "麻烦",
+                1: "联系",
+                2: "平时",
+                3: "好像",
+                4: "陪"
+            };
+            
+            // 为每个词语框添加点击事件
+            wordBoxes.forEach(box => {
+                box.addEventListener('click', function() {
+                    // 如果词语已被使用，则忽略点击
+                    if (this.classList.contains('used')) return;
+                    
+                    const word = this.getAttribute('data-word');
+                    let wordUsed = false;
+                    
+                    // 尝试将词语填入第一个未填的空
+                    for (let i = 0; i < blanks.length; i++) {
+                        if (!blanks[i].textContent) {
+                            // 检查答案是否正确
+                            if (word === correctAnswers[i]) {
+                                blanks[i].textContent = word;
+                                blanks[i].classList.add('filled');
+                                
+                                // 标记词语为已使用
+                                this.classList.add('used');
+                                this.style.transform = 'scale(0.9) rotate(0deg)';
+                                
+                                correctCount++;
+                                wordUsed = true;
+                                
+                                // 检查是否所有空白都填完
+                                if (correctCount === blanks.length) {
+                                    setTimeout(() => {
+                                        feedback.style.display = 'block';
+                                        setTimeout(() => {
+                                            feedback.style.display = 'none';
+                                        }, 3000);
+                                    }, 500);
+                                }
+                            } else {
+                                // 错误答案，震动效果
+                                this.classList.add('shake');
+                                setTimeout(() => {
+                                    this.classList.remove('shake');
+                                }, 500);
+                            }
+                            break;
+                        }
+                    }
+                    
+                    // 如果词语没有被使用（即所有空都已填），仍然震动提示
+                    if (!wordUsed) {
+                        this.classList.add('shake');
+                        setTimeout(() => {
+                            this.classList.remove('shake');
+                        }, 500);
+                    }
+                });
+            });
+            
+            // 为空白处添加点击事件（可以移除已填的词语）
+            blanks.forEach((blank, index) => {
+                blank.addEventListener('click', function() {
+                    if (this.textContent) {
+                        const word = this.textContent;
+                        
+                        // 移除空白处的词语
+                        this.textContent = '';
+                        this.classList.remove('filled');
+                        correctCount--;
+                        
+                        // 重新激活对应的词语框
+                        wordBoxes.forEach(box => {
+                            if (box.getAttribute('data-word') === word) {
+                                box.classList.remove('used');
+                                box.style.transform = '';
+                                // 恢复原始旋转角度
+                                const rotateValue = box.style.getPropertyValue('--rotate');
+                                box.style.transform = `rotate(${rotateValue})`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

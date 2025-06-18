@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园风选词填空游戏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e6f7ff, #c2e9fb);
+            font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 校园装饰元素 */
+        .decoration {
+            position: absolute;
+            z-index: 0;
+            opacity: 0.15;
+        }
+        
+        .pencil {
+            width: 40px;
+            height: 200px;
+            background: linear-gradient(90deg, #FFD700 70%, #C0C0C0 30%);
+            position: absolute;
+            transform: rotate(15deg);
+            top: 10%;
+            left: 5%;
+            border-radius: 5px;
+        }
+        
+        .pencil:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: -10px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 10px solid #C0C0C0;
+        }
+        
+        .book {
+            width: 80px;
+            height: 100px;
+            background: #8B4513;
+            position: absolute;
+            bottom: 10%;
+            right: 5%;
+            border-radius: 5px 10px 10px 5px;
+            transform: rotate(-10deg);
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+        }
+        
+        .book:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: #A0522D;
+        }
+        
+        .ruler {
+            width: 200px;
+            height: 20px;
+            background: linear-gradient(90deg, #32CD32, #32CD32 95%, #000 95%);
+            position: absolute;
+            top: 15%;
+            right: 10%;
+            transform: rotate(-5deg);
+            border-radius: 3px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        
+        .ruler:after {
+            content: "cm";
+            position: absolute;
+            font-size: 12px;
+            color: white;
+            left: 10px;
+            top: 3px;
+        }
+        
+        .notebook {
+            width: 120px;
+            height: 150px;
+            background: #f9f3e9;
+            position: absolute;
+            bottom: 20%;
+            left: 7%;
+            border: 1px solid #d4c19c;
+            border-radius: 5px;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+            transform: rotate(5deg);
+        }
+        
+        .notebook:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 100%;
+            background: #e8d9b0;
+            border-right: 1px dashed #d4c19c;
+        }
+        
+        /* 标题样式 */
+        .game-title {
+            font-size: 3.2rem;
+            color: #32CD32;
+            text-align: center;
+            margin: 30px 0 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 2px;
+            position: relative;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        .game-title:after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(to right, transparent, #32CD32, transparent);
+        }
+        
+        /* 游戏容器 */
+        .game-container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1;
+            border: 3px solid #fff;
+        }
+        
+        /* 词语选择区域 */
+        .word-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin: 30px 0 50px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            position: relative;
+            border: 3px solid #fff;
+        }
+        
+        .word-container:before {
+            content: "✏️ 请选择词语填空 ✏️";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            color: #4B0082;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .word-box {
+            width: 120px;
+            height: 70px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            border: 3px solid #fff;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .word-box:nth-child(2) {
+            background: linear-gradient(135deg, #87CEEB, #1E90FF);
+        }
+        
+        .word-box:nth-child(3) {
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+        }
+        
+        .word-box:nth-child(4) {
+            background: linear-gradient(135deg, #98FB98, #32CD32);
+        }
+        
+        .word-box:nth-child(5) {
+            background: linear-gradient(135deg, #DDA0DD, #9370DB);
+        }
+        
+        .word-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .word-box:active {
+            transform: scale(0.95);
+        }
+        
+        .word-box.used {
+            opacity: 0.3;
+            transform: scale(0.9);
+            cursor: not-allowed;
+        }
+        
+        /* 句子区域 */
+        .sentence-container {
+            width: 100%;
+            background: #fff9c4;
+            border: 5px solid #8B4513;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            background-image: 
+                linear-gradient(90deg, transparent 98%, #8B4513 98%),
+                linear-gradient(0deg, transparent 98%, #8B4513 98%);
+            background-size: 30px 30px;
+        }
+        
+        .sentence-container:before {
+            content: "📚 句子填空区 📚";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #8B4513;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        .sentence {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            position: relative;
+            min-height: 60px;
+        }
+        
+        .sentence:nth-child(even) {
+            background: rgba(230, 230, 250, 0.7);
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 100px;
+            height: 50px;
+            border-bottom: 3px dashed #333;
+            margin: 0 10px;
+            text-align: center;
+            vertical-align: middle;
+            position: relative;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .blank.filled {
+            border-bottom: 3px solid #32CD32;
+            background: rgba(144, 238, 144, 0.3);
+        }
+        
+        /* 反馈信息 */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 2.5rem;
+            color: #FF4500;
+            z-index: 100;
+            display: none;
+            border: 5px solid #FFD700;
+            animation: popIn 0.5s;
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        /* 页脚 */
+        footer {
+            margin-top: 20px;
+            padding: 15px;
+            color: #555;
+            font-size: 1.1rem;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.2rem;
+            }
+            
+            .word-container {
+                gap: 15px;
+            }
+            
+            .word-box {
+                width: 100px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .sentence {
+                font-size: 1.3rem;
+            }
+            
+            .blank {
+                min-width: 80px;
+                height: 40px;
+            }
+            
+            .feedback {
+                font-size: 2rem;
+                padding: 20px 30px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 1.8rem;
+            }
+            
+            .word-box {
+                width: 80px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .sentence {
+                font-size: 1.1rem;
+                padding: 10px;
+            }
+            
+            .blank {
+                min-width: 60px;
+                height: 35px;
+                margin: 0 5px;
+            }
+            
+            .feedback {
+                font-size: 1.6rem;
+                padding: 15px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰元素 -->
+    <div class="decoration pencil"></div>
+    <div class="decoration book"></div>
+    <div class="decoration ruler"></div>
+    <div class="decoration notebook"></div>
+    
+    <!-- 游戏标题 -->
+    <h1 class="game-title">选择合适的词语填空</h1>
+    
+    <div class="game-container">
+        <!-- 词语选择区 -->
+        <div class="word-container">
+            <div class="word-box" data-word="镜子">镜子</div>
+            <div class="word-box" data-word="理解">理解</div>
+            <div class="word-box" data-word="适应">适应</div>
+            <div class="word-box" data-word="无聊">无聊</div>
+            <div class="word-box" data-word="周围">周围</div>
+        </div>
+        
+        <!-- 句子填空区 -->
+        <div class="sentence-container">
+            <div class="sentence">
+                ① 每个人对幸福都有不同的<span class="blank" data-answer="理解"></span>。
+            </div>
+            <div class="sentence">
+                ② 我喜欢现在住的地方，很方便。不像以前住的地方，<span class="blank" data-answer="周围"></span>一个超市都没有。
+            </div>
+            <div class="sentence">
+                ③ 生活就像<span class="blank" data-answer="镜子"></span>，你对它笑，它也对你笑；如果你对它哭，它也对你哭。
+            </div>
+            <div class="sentence">
+                ④ 周末总是一个人在家太<span class="blank" data-answer="无聊"></span>了，你应该找朋友出去逛逛街、看看电影、吃吃饭。
+            </div>
+            <div class="sentence">
+                ⑤ 我刚来这儿的时候很不<span class="blank" data-answer="适应"></span>，后来慢慢习惯了，也交到了很多朋友，我越来越喜欢这儿的生活了。
+            </div>
+        </div>
+    </div>
+    
+    <!-- 反馈信息 -->
+    <div class="feedback">你真厉害，学霸就是你！</div>
+    
+    <footer>
+        校园风选词填空游戏 | 提升你的语言能力
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wordBoxes = document.querySelectorAll('.word-box');
+            const blanks = document.querySelectorAll('.blank');
+            const feedback = document.querySelector('.feedback');
+            let correctCount = 0;
+            
+            // 正确答案映射
+            const correctAnswers = {
+                0: "理解",
+                1: "周围",
+                2: "镜子",
+                3: "无聊",
+                4: "适应"
+            };
+            
+            // 为每个词语框添加点击事件
+            wordBoxes.forEach(box => {
+                box.addEventListener('click', function() {
+                    // 如果词语已被使用，则忽略点击
+                    if (this.classList.contains('used')) return;
+                    
+                    const word = this.getAttribute('data-word');
+                    let wordUsed = false;
+                    
+                    // 尝试将词语填入第一个未填的空
+                    for (let i = 0; i < blanks.length; i++) {
+                        if (!blanks[i].textContent) {
+                            // 检查答案是否正确
+                            if (word === correctAnswers[i]) {
+                                blanks[i].textContent = word;
+                                blanks[i].classList.add('filled');
+                                
+                                // 标记词语为已使用
+                                this.classList.add('used');
+                                this.style.transform = 'scale(0.9)';
+                                
+                                correctCount++;
+                                wordUsed = true;
+                                
+                                // 检查是否所有空白都填完
+                                if (correctCount === blanks.length) {
+                                    setTimeout(() => {
+                                        feedback.style.display = 'block';
+                                        setTimeout(() => {
+                                            feedback.style.display = 'none';
+                                        }, 3000);
+                                    }, 500);
+                                }
+                            } else {
+                                // 错误答案，震动效果
+                                this.classList.add('shake');
+                                setTimeout(() => {
+                                    this.classList.remove('shake');
+                                }, 500);
+                            }
+                            break;
+                        }
+                    }
+                    
+                    // 如果词语没有被使用（即所有空都已填），仍然震动提示
+                    if (!wordUsed) {
+                        this.classList.add('shake');
+                        setTimeout(() => {
+                            this.classList.remove('shake');
+                        }, 500);
+                    }
+                });
+            });
+            
+            // 为空白处添加点击事件（可以移除已填的词语）
+            blanks.forEach(blank => {
+                blank.addEventListener('click', function() {
+                    if (this.textContent) {
+                        const word = this.textContent;
+                        
+                        // 移除空白处的词语
+                        this.textContent = '';
+                        this.classList.remove('filled');
+                        correctCount--;
+                        
+                        // 重新激活对应的词语框
+                        wordBoxes.forEach(box => {
+                            if (box.getAttribute('data-word') === word) {
+                                box.classList.remove('used');
+                                box.style.transform = '';
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

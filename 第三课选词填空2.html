@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选词填空挑战</title>
+    <style>
+        :root {
+            --primary-color: #ff7e5f;
+            --secondary-color: #feb47b;
+            --accent-color: #7b68ee;
+            --background-color: #f9f7f7;
+            --text-color: #333;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--background-color), #e3f2fd);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .decoration {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .decoration.top-left {
+            top: 20px;
+            left: 20px;
+            font-size: 60px;
+            color: var(--primary-color);
+            transform: rotate(-15deg);
+        }
+        
+        .decoration.bottom-right {
+            bottom: 20px;
+            right: 20px;
+            font-size: 60px;
+            color: var(--secondary-color);
+            transform: rotate(15deg);
+        }
+        
+        .decoration.center-left {
+            top: 50%;
+            left: 40px;
+            font-size: 50px;
+            color: var(--accent-color);
+            transform: translateY(-50%) rotate(-10deg);
+        }
+        
+        .decoration.center-right {
+            top: 50%;
+            right: 40px;
+            font-size: 50px;
+            color: var(--primary-color);
+            transform: translateY(-50%) rotate(10deg);
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+        
+        .words-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            min-height: 80px;
+        }
+        
+        .word-box {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .word-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .word-box.used {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+        
+        .word-box.shake {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .sentences-container {
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .sentence {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .sentence:last-child {
+            margin-bottom: 0;
+        }
+        
+        .sentence-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 80px;
+            height: 30px;
+            border-bottom: 2px solid var(--accent-color);
+            text-align: center;
+            position: relative;
+            margin: 0 5px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .blank.filled {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 4px;
+        }
+        
+        .timer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timer-icon {
+            margin-right: 8px;
+        }
+        
+        .progress-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-icon {
+            margin-right: 8px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: modalAppear 0.5s;
+        }
+        
+        @keyframes modalAppear {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .modal-title {
+            font-size: 2rem;
+            color: var(--success-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-title i {
+            margin-right: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .modal-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+        
+        .time-result {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            background-color: rgba(123, 104, 238, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: confetti-fall 5s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .word-box {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+            
+            .sentence {
+                font-size: 1rem;
+            }
+            
+            .timer-container, .progress-container {
+                position: relative;
+                top: auto;
+                right: auto;
+                left: auto;
+                margin-bottom: 15px;
+                display: inline-flex;
+            }
+            
+            .controls {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰元素 -->
+    <div class="decoration top-left">📚</div>
+    <div class="decoration bottom-right">🎮</div>
+    <div class="decoration center-left">🔤</div>
+    <div class="decoration center-right">📝</div>
+    
+    <div class="container">
+        <h1>选词填空挑战</h1>
+        
+        <div class="controls">
+            <div class="progress-container">
+                <span class="progress-icon">🎯</span>
+                <span id="progress">0/5</span>
+            </div>
+            
+            <div class="timer-container">
+                <span class="timer-icon">⏱️</span>
+                <span id="timer">00:00</span>
+            </div>
+        </div>
+        
+        <div class="words-container" id="wordsContainer">
+            <!-- 词语将通过JavaScript动态添加 -->
+        </div>
+        
+        <div class="sentences-container" id="sentencesContainer">
+            <!-- 句子将通过JavaScript动态添加 -->
+        </div>
+    </div>
+    
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-title">🎉 你太棒啦！</div>
+            <p class="modal-text">恭喜你完成了所有填空！</p>
+            <div class="time-result" id="timeResult">用时: 00:00</div>
+            <button class="restart-btn" id="restartBtn">再来一次</button>
+        </div>
+    </div>
+    
+    <script>
+        // 游戏数据
+        const gameData = {
+            words: ['紧张', '提供', '符合', '安排', '判断'],
+            sentences: [
+                '他们这次招聘的要求虽然高，但是那些要求你都______，你应该去试试。',
+                '看一个人怎么说话，常可以比较容易地______出他是一个什么样的人。',
+                '第一次跟女朋友见面的时候，他______得脸和耳朵都红了。',
+                '她想借这次机会去长城（Chángchéng, the Great Wall）看看，可是公司的事情很多，时间______得很紧张。',
+                '这里______的工作机会是最多的，每天都有很多公司在上面发招聘通知。'
+            ],
+            correctAnswers: ['符合', '判断', '紧张', '安排', '提供']
+        };
+        
+        // 游戏状态
+        let gameState = {
+            currentQuestion: 0,
+            startTime: null,
+            timerInterval: null,
+            completed: false
+        };
+        
+        // DOM 元素
+        const wordsContainer = document.getElementById('wordsContainer');
+        const sentencesContainer = document.getElementById('sentencesContainer');
+        const timerElement = document.getElementById('timer');
+        const progressElement = document.getElementById('progress');
+        const successModal = document.getElementById('successModal');
+        const timeResult = document.getElementById('timeResult');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            gameState.currentQuestion = 0;
+            gameState.completed = false;
+            gameState.startTime = new Date();
+            updateProgress();
+            
+            // 清空容器
+            wordsContainer.innerHTML = '';
+            sentencesContainer.innerHTML = '';
+            
+            // 打乱词语顺序
+            const shuffledWords = [...gameData.words].sort(() => Math.random() - 0.5);
+            
+            // 创建词语盒子
+            shuffledWords.forEach(word => {
+                const wordBox = document.createElement('div');
+                wordBox.className = 'word-box';
+                wordBox.textContent = word;
+                wordBox.addEventListener('click', () => handleWordClick(word, wordBox));
+                wordsContainer.appendChild(wordBox);
+            });
+            
+            // 创建句子
+            gameData.sentences.forEach((sentence, index) => {
+                const sentenceElement = document.createElement('div');
+                sentenceElement.className = 'sentence';
+                
+                const numberElement = document.createElement('span');
+                numberElement.className = 'sentence-number';
+                numberElement.textContent = index + 1;
+                sentenceElement.appendChild(numberElement);
+                
+                // 分割句子，在下划线处插入空白元素
+                const parts = sentence.split('______');
+                sentenceElement.appendChild(document.createTextNode(parts[0]));
+                
+                const blankElement = document.createElement('span');
+                blankElement.className = 'blank';
+                blankElement.id = `blank-${index}`;
+                sentenceElement.appendChild(blankElement);
+                
+                sentenceElement.appendChild(document.createTextNode(parts[1]));
+                
+                sentencesContainer.appendChild(sentenceElement);
+            });
+            
+            // 开始计时器
+            startTimer();
+        }
+        
+        // 处理词语点击
+        function handleWordClick(word, wordBox) {
+            if (gameState.completed) return;
+            
+            const correctWord = gameData.correctAnswers[gameState.currentQuestion];
+            
+            if (word === correctWord) {
+                // 正确答案
+                const blankElement = document.getElementById(`blank-${gameState.currentQuestion}`);
+                blankElement.textContent = word;
+                blankElement.classList.add('filled');
+                
+                // 标记词语为已使用
+                wordBox.classList.add('used');
+                
+                // 更新游戏状态
+                gameState.currentQuestion++;
+                updateProgress();
+                
+                // 检查是否完成所有问题
+                if (gameState.currentQuestion >= gameData.sentences.length) {
+                    gameCompleted();
+                }
+            } else {
+                // 错误答案，添加震动效果
+                wordBox.classList.add('shake');
+                setTimeout(() => {
+                    wordBox.classList.remove('shake');
+                }, 500);
+            }
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            progressElement.textContent = `${gameState.currentQuestion}/5`;
+        }
+        
+        // 开始计时器
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            gameState.startTime = new Date();
+            
+            gameState.timerInterval = setInterval(() => {
+                const currentTime = new Date();
+                const elapsedTime = Math.floor((currentTime - gameState.startTime) / 1000);
+                
+                const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+                const seconds = (elapsedTime % 60).toString().padStart(2, '0');
+                
+                timerElement.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+        
+        // 游戏完成
+        function gameCompleted() {
+            gameState.completed = true;
+            clearInterval(gameState.timerInterval);
+            
+            const currentTime = new Date();
+            const elapsedTime = Math.floor((currentTime - gameState.startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+            const seconds = (elapsedTime % 60).toString().padStart(2, '0');
+            
+            timeResult.textContent = `用时: ${minutes}:${seconds}`;
+            successModal.style.display = 'flex';
+            
+            // 创建庆祝彩花效果
+            createConfetti();
+        }
+        
+        // 创建彩花效果
+        function createConfetti() {
+            const colors = ['#ff7e5f', '#feb47b', '#7b68ee', '#4caf50', '#f44336', '#ffeb3b', '#03a9f4'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.animationDuration = `${3 + Math.random() * 3}s`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                document.body.appendChild(confetti);
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // 重新开始游戏
+        restartBtn.addEventListener('click', () => {
+            successModal.style.display = 'none';
+            initGame();
+        });
+        
+        // 初始化游戏
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
